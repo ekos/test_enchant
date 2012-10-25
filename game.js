@@ -38,14 +38,14 @@
       this.image = game.assets['purimurabana1.gif'];
       this.addEventListener('enterframe', function() {
         if (game.input.up) {
-          this.y -= 5;
+          this.y -= 1;
         } else if (game.input.down) {
-          this.y += 5;
+          this.y += 1;
         }
         if (game.input.left) {
-          return this.x -= 5;
+          return this.x -= 1;
         } else if (game.input.right) {
-          return this.x += 5;
+          return this.x += 1;
         }
       });
     }

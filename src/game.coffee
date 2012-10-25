@@ -18,13 +18,13 @@ class Player extends Sprite
     @image = game.assets['purimurabana1.gif']
     @addEventListener 'enterframe', ->
       if game.input.up
-        @y -= 5
+        @y -= 1
       else if game.input.down
-        @y += 5
+        @y += 1
       if game.input.left
-        @x -= 5
+        @x -= 1
       else if game.input.right
-        @x += 5
+        @x += 1
 
 window.onload = ->
   new SampleGame()
