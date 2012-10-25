@@ -14,9 +14,17 @@
       SampleGame.__super__.constructor.call(this, 320, 320);
       this.fps = 30;
       SampleGame.game = this;
-      this.preload("purimurabana1.gif");
+      this.preload("puzzle.png");
       this.onload = function() {
-        return this.rootScene.addChild(new Player(100, 100));
+        var map;
+        map = new Map(6, 5);
+        map.image = SampleGame.game.assets['puzzle.png'];
+        map.tileHeight = 18;
+        map.tileWidth = 18;
+        map.loadData([[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]]);
+        this.rootScene.addChild(map);
+        this.rootScene.addChild(new Player(100, 100));
+        return this.rootScene.addChild(new Player(120, 120));
       };
       this.start();
     }
@@ -31,22 +39,13 @@
 
     function Player(x, y) {
       var game;
-      Player.__super__.constructor.call(this, 44, 32);
+      Player.__super__.constructor.call(this, 18, 18);
       this.x = x;
       this.y = y;
       game = SampleGame.game;
-      this.image = game.assets['purimurabana1.gif'];
-      this.addEventListener('enterframe', function() {
-        if (game.input.up) {
-          this.y -= 1;
-        } else if (game.input.down) {
-          this.y += 1;
-        }
-        if (game.input.left) {
-          return this.x -= 1;
-        } else if (game.input.right) {
-          return this.x += 1;
-        }
+      this.image = game.assets['puzzle.png'];
+      this.addEventListener('touchstart', function() {
+        return this.frame += 1;
       });
     }
 
