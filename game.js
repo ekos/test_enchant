@@ -15,6 +15,7 @@
       this.fps = 30;
       SampleGame.game = this;
       this.preload("puzzle.png");
+      this.preload("chara.png");
       this.onload = function() {
         var map;
         map = new Map(6, 5);
@@ -22,9 +23,8 @@
         map.tileHeight = 18;
         map.tileWidth = 18;
         map.loadData([[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]]);
-        this.rootScene.addChild(map);
-        this.rootScene.addChild(new Player(100, 100));
-        return this.rootScene.addChild(new Player(120, 120));
+        SampleGame.player = new Player(100, 100);
+        return this.rootScene.addChild(SampleGame.player);
       };
       this.start();
     }
@@ -38,14 +38,15 @@
     __extends(Player, _super);
 
     function Player(x, y) {
-      var game;
-      Player.__super__.constructor.call(this, 18, 18);
+      var game, player;
+      Player.__super__.constructor.call(this, 32, 32);
       this.x = x;
       this.y = y;
       game = SampleGame.game;
-      this.image = game.assets['puzzle.png'];
+      player = SampleGame.player;
+      this.image = game.assets['chara.png'];
       this.addEventListener('touchstart', function() {
-        return this.frame += 1;
+        return this.x += 1;
       });
     }
 
