@@ -6,6 +6,7 @@ class SampleGame extends Game
     SampleGame.game = @
     @preload "puzzle.png"
     @preload "chara.png"
+    @preload "pad.png"
     @onload = ->
       map = new Map(6, 5)
       map.image = SampleGame.game.assets['puzzle.png']
@@ -21,17 +22,10 @@ class SampleGame extends Game
 #      @rootScene.addChild map
       SampleGame.player = new Player(100, 100)
       @rootScene.addChild SampleGame.player
+      
+      SampleGame.pad = new Pad(0, 220)
+      @rootScene.addChild SampleGame.pad
     @start()
-
-class Player extends Sprite
-  constructor: (x, y) ->
-    super 32, 32
-    
-    
-    @x = x
-    @y = y
-    game = SampleGame.game
-    @image = game.assets['chara.png']
 
 window.onload = ->
   new SampleGame()

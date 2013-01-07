@@ -5,6 +5,8 @@ FILENAME = 'game' # write your game title.
 FILES = [
   'src/game.coffee',
   'src/test.coffee',
+  'src/player.coffee',
+  'src/pad.coffee'
   # write sourcecodes here.
 ]
 
