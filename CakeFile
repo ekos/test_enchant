@@ -6,7 +6,9 @@ FILES = [
   'src/game.coffee',
   'src/test.coffee',
   'src/player.coffee',
-  'src/pad.coffee'
+  'src/pad.coffee',
+  'src/bullet.coffee',
+  'src/shot.coffee'
   # write sourcecodes here.
 ]
 

@@ -1,12 +1,19 @@
-enchant()
+enchant();
 class SampleGame extends Game
+  SampleGame.WIDTH_SIZE = 320
+  SampleGame.HEIGHT_SIZE = 320
+  SampleGame.DOWN = 0
+  SampleGame.LEFT = 1
+  SampleGame.RIGHT = 2
+  SampleGame.UP = 3
+
   constructor : ->
-    super 320, 320
+    super SampleGame.WIDTH_SIZE, SampleGame.HEIGHT_SIZE
     @fps = 30
     SampleGame.game = @
+    
     @preload "puzzle.png"
     @preload "chara.png"
-    @preload "pad.png"
     @onload = ->
       map = new Map(6, 5)
       map.image = SampleGame.game.assets['puzzle.png']
@@ -23,8 +30,30 @@ class SampleGame extends Game
       SampleGame.player = new Player(100, 100)
       @rootScene.addChild SampleGame.player
       
-      SampleGame.pad = new Pad(0, 220)
+      SampleGame.backSprite = new Sprite(SampleGame.WIDTH_SIZE, 100)
+      SampleGame.back = new Surface(SampleGame.WIDTH_SIZE, 100)
+      SampleGame.back.context.fillStyle = "#CCCCCC"
+      SampleGame.back.context.fillRect 0, 0, SampleGame.WIDTH_SIZE, 100
+      SampleGame.backSprite.image = SampleGame.back;
+      SampleGame.backSprite.moveTo(0, SampleGame.HEIGHT_SIZE - 100)
+      @rootScene.addChild SampleGame.backSprite
+      
+      
+      SampleGame.pad = new Pad()
+      SampleGame.pad.moveTo(0, 220);
       @rootScene.addChild SampleGame.pad
+      
+      SampleGame.button = new Shot(220, 220)
+      @rootScene.addChild SampleGame.button
+      
+      @addEventListener 'enterframe', ->
+        @rootScene.removeChild SampleGame.backSprite
+        @rootScene.removeChild SampleGame.pad
+        @rootScene.removeChild SampleGame.button
+        @rootScene.insertBefore SampleGame.backSprite
+        @rootScene.insertBefore SampleGame.pad
+        @rootScene.insertBefore SampleGame.button
+        
     @start()
 
 window.onload = ->
