@@ -11,7 +11,8 @@ class Bullet extends Sprite
     @bullet_turn = turn
     @is_die = false
     @image = SampleGame.game.assets['icon.png']
-    
+#    sound = SampleGame.game.assets['shot4.wav'].clone()
+#    sound.play();
     @frame = Bullet.FRAME_INDEX[@bullet_turn]
     
     @addEventListener 'enterframe', ->

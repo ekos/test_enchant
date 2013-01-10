@@ -1,7 +1,7 @@
 class Shot extends Sprite
   constructor: (x, y) ->
     super 100, 100
-    Shot.SHOT_MAX = 20
+    Shot.SHOT_MAX = 5
     @bullet_num = 0
     @bullet_obj = []
     

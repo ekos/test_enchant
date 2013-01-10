@@ -16,9 +16,7 @@ class Player extends Sprite
     @x = x
     @y = y
     @image = SampleGame.game.assets['chara.png']
-    
-    
-    
+
     @addEventListener 'enterframe', ->
       input = SampleGame.game.input;
       #ˆÚ“®

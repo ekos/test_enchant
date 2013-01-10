@@ -9,6 +9,9 @@ FILES = [
   'src/pad.coffee',
   'src/bullet.coffee',
   'src/shot.coffee'
+  'src/enemyManage.coffee'
+  'src/enemy.coffee'
+  'src/score.coffee'
   # write sourcecodes here.
 ]
 

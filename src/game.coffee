@@ -14,19 +14,10 @@ class SampleGame extends Game
     
     @preload "puzzle.png"
     @preload "chara.png"
+    @preload "enemy.png"
+    @preload "enemy2.png"
+#    @preload "shot4.wav"
     @onload = ->
-      map = new Map(6, 5)
-      map.image = SampleGame.game.assets['puzzle.png']
-      map.tileHeight = 18
-      map.tileWidth = 18
-      map.loadData([
-        [0,1,2,3,4,5],
-        [0,1,2,3,4,5],
-        [0,1,2,3,4,5],
-        [0,1,2,3,4,5],
-        [0,1,2,3,4,5]
-      ])
-#      @rootScene.addChild map
       SampleGame.player = new Player(100, 100)
       @rootScene.addChild SampleGame.player
       
@@ -46,14 +37,22 @@ class SampleGame extends Game
       SampleGame.button = new Shot(220, 220)
       @rootScene.addChild SampleGame.button
       
+      SampleGame.enemy = new EnemyManage()
+      @rootScene.addChild SampleGame.enemy
+      
+      SampleGame.score = new Score(120, 230)
+      @rootScene.addChild SampleGame.score
+
+      
       @addEventListener 'enterframe', ->
         @rootScene.removeChild SampleGame.backSprite
         @rootScene.removeChild SampleGame.pad
         @rootScene.removeChild SampleGame.button
+
         @rootScene.insertBefore SampleGame.backSprite
         @rootScene.insertBefore SampleGame.pad
         @rootScene.insertBefore SampleGame.button
-        
+
     @start()
 
 window.onload = ->
