@@ -4,6 +4,7 @@ class Enemy extends Sprite
   Enemy.HEIGHT = 70
   Enemy.HIT_POINT = 10
   Enemy.DAMAGE_FRAME = 5
+  Enemy.FLASH_FRAME = 10
   constructor: (x, y) ->
     super Enemy.WIDTH, Enemy.HEIGHT
     @image = SampleGame.game.assets['enemy.png']
@@ -14,7 +15,7 @@ class Enemy extends Sprite
     @is_die = false
     @is_damage = false
     @damage_frame = 0
-    
+    @flash_frame = Enemy.FLASH_FRAME
     @addEventListener 'enterframe', ->
       x_speed = ((SampleGame.player.x + Player.WIDTH / 2) - (@x + Enemy.WIDTH / 2))
       y_speed = ((SampleGame.player.y + Player.HEIGHT / 2) - (@y + Enemy.HEIGHT / 2))
@@ -44,6 +45,8 @@ class Enemy extends Sprite
               @x -= 10
             SampleGame.button.bullet_obj[i].is_die = true
             
+            SampleGame.score.score_num += 3
+            
             @image = SampleGame.game.assets['enemy2.png']
             @damage_frame = Enemy.DAMAGE_FRAME
             @is_damage = true
@@ -51,4 +54,13 @@ class Enemy extends Sprite
             @hit_point--
             if @hit_point <= 0
               @is_die = true
-              
+              SampleGame.score.score_num += 10
+  flash: ->
+    @flash_frame--
+    if @flash_frame <= 0
+      if @visible
+        @visible = false
+      else
+        @visible = true
+      @flash_frame = Enemy.FLASH_FRAME
+    return 0

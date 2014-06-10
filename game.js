@@ -22,6 +22,8 @@
 
     SampleGame.UP = 3;
 
+    SampleGame.GAMEOVER_WAIT = 50;
+
     function SampleGame() {
       SampleGame.__super__.constructor.call(this, SampleGame.WIDTH_SIZE, SampleGame.HEIGHT_SIZE);
       this.fps = 30;
@@ -30,7 +32,28 @@
       this.preload("chara.png");
       this.preload("enemy.png");
       this.preload("enemy2.png");
+      this.preload("start.png");
+      this.preload("end.png");
       this.onload = function() {
+        return SampleGame.game.pushScene(SampleGame.game.makeSceneStart());
+      };
+      SampleGame.game.makeSceneStart = function() {
+        var bg, scene, start;
+        scene = new Scene();
+        start = new Sprite(236, 48);
+        start.moveTo(SampleGame.WIDTH_SIZE / 2 - 236 / 2, SampleGame.HEIGHT_SIZE / 2 - 48 / 2);
+        start.image = SampleGame.game.assets['start.png'];
+        scene.addChild(start);
+        bg = new Sprite(SampleGame.WIDTH_SIZE, SampleGame.HEIGHT_SIZE);
+        bg.addEventListener('touchstart', function() {
+          scene.removeChild(start);
+          scene.removeChild(bg);
+          return SampleGame.game.pushScene(SampleGame.game.makeSceneGame());
+        });
+        scene.addChild(bg);
+        return scene;
+      };
+      SampleGame.game.makeSceneGame = function() {
         SampleGame.player = new Player(100, 100);
         this.rootScene.addChild(SampleGame.player);
         SampleGame.backSprite = new Sprite(SampleGame.WIDTH_SIZE, 100);
@@ -49,14 +72,61 @@
         this.rootScene.addChild(SampleGame.enemy);
         SampleGame.score = new Score(120, 230);
         this.rootScene.addChild(SampleGame.score);
-        return this.addEventListener('enterframe', function() {
+        this.addEventListener('enterframe', function() {
+          var i, _i, _j, _k, _l, _ref, _ref1;
           this.rootScene.removeChild(SampleGame.backSprite);
           this.rootScene.removeChild(SampleGame.pad);
           this.rootScene.removeChild(SampleGame.button);
+          for (i = _i = 0, _ref = Score.STR_INDEX.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+            this.rootScene.removeChild(SampleGame.score.str_sprite[i]);
+          }
+          for (i = _j = 0; _j < 5; i = ++_j) {
+            this.rootScene.removeChild(SampleGame.score.num_sprite[i]);
+          }
           this.rootScene.insertBefore(SampleGame.backSprite);
           this.rootScene.insertBefore(SampleGame.pad);
-          return this.rootScene.insertBefore(SampleGame.button);
+          this.rootScene.insertBefore(SampleGame.button);
+          for (i = _k = 0, _ref1 = Score.STR_INDEX.length; 0 <= _ref1 ? _k < _ref1 : _k > _ref1; i = 0 <= _ref1 ? ++_k : --_k) {
+            this.rootScene.insertBefore(SampleGame.score.str_sprite[i]);
+          }
+          for (i = _l = 0; _l < 5; i = ++_l) {
+            this.rootScene.insertBefore(SampleGame.score.num_sprite[i]);
+          }
+          SampleGame.hit_enemy_id = SampleGame.player.is_enemy_hit();
+          if (SampleGame.hit_enemy_id !== -1) {
+            SampleGame.game.pushScene(SampleGame.game.makeSceneResult());
+          }
+          return SampleGame.score.score_update();
         });
+        return this.rootScene;
+      };
+      SampleGame.game.makeSceneResult = function() {
+        var end, i, _i, _ref;
+        SampleGame.enemy.clearEventListener('enterframe');
+        SampleGame.player.clearEventListener('enterframe');
+        SampleGame.button.clearEventListener('enterframe');
+        for (i = _i = 0, _ref = EnemyManage.ENEMY_MAX; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+          SampleGame.enemy.enemy_obj[i].clearEventListener('enterframe');
+        }
+        SampleGame.enemy.enemy_obj[SampleGame.hit_enemy_id].flash();
+        SampleGame.player.flash();
+        SampleGame.game_over_wait = SampleGame.GAMEOVER_WAIT;
+        SampleGame.game_over_view = false;
+        end = new Sprite(189, 97);
+        end.moveTo(SampleGame.WIDTH_SIZE / 2 - 189 / 2, SampleGame.HEIGHT_SIZE / 2 - 97 / 2);
+        end.image = SampleGame.game.assets['end.png'];
+        end.visible = false;
+        this.rootScene.addChild(end);
+        this.addEventListener('enterframe', function() {
+          if (!SampleGame.game_over_view) {
+            SampleGame.game_over_wait--;
+          }
+          if (SampleGame.game_over_wait < 0 && !SampleGame.game_over_view) {
+            end.visible = true;
+            return SampleGame.game_over_view = true;
+          }
+        });
+        return this.rootScene;
       };
       this.start();
     }
@@ -85,10 +155,13 @@
 
     Player.MOVE_SPEED = 3;
 
+    Player.FLASH_FRAME = 10;
+
     function Player(x, y) {
       Player.__super__.constructor.call(this, Player.WIDTH, Player.HEIGHT);
       this.now_frame_index = 0;
       this.anim_wait = Player.ANIM_WAIT;
+      this.flash_frame = Player.FLASH_FRAME;
       this.player_turn = SampleGame.DOWN;
       this.x = x;
       this.y = y;
@@ -135,6 +208,34 @@
         }
       });
     }
+
+    Player.prototype.is_enemy_hit = function() {
+      var distance, i, _i, _ref;
+      for (i = _i = 0, _ref = EnemyManage.ENEMY_MAX; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        if (SampleGame.enemy.enemy_obj[i] !== null && !SampleGame.enemy.enemy_obj[i].is_die) {
+          distance = ((Enemy.WIDTH - 14) + Player.WIDTH - 6) / 2;
+          if (SampleGame.enemy.enemy_obj[i].within(this, distance)) {
+            return i;
+          }
+        } else {
+          return -1;
+        }
+      }
+      return -1;
+    };
+
+    Player.prototype.flash = function() {
+      this.flash_frame--;
+      if (this.flash_frame <= 0) {
+        if (this.visible) {
+          this.visible = false;
+        } else {
+          this.visible = true;
+        }
+        this.flash_frame = Player.FLASH_FRAME;
+      }
+      return 0;
+    };
 
     return Player;
 
@@ -334,6 +435,8 @@
 
     Enemy.DAMAGE_FRAME = 5;
 
+    Enemy.FLASH_FRAME = 10;
+
     function Enemy(x, y) {
       Enemy.__super__.constructor.call(this, Enemy.WIDTH, Enemy.HEIGHT);
       this.image = SampleGame.game.assets['enemy.png'];
@@ -343,6 +446,7 @@
       this.is_die = false;
       this.is_damage = false;
       this.damage_frame = 0;
+      this.flash_frame = Enemy.FLASH_FRAME;
       this.addEventListener('enterframe', function() {
         var distance, i, l, x_speed, y_speed, _i, _ref, _results;
         x_speed = (SampleGame.player.x + Player.WIDTH / 2) - (this.x + Enemy.WIDTH / 2);
@@ -372,12 +476,14 @@
                 this.x -= 10;
               }
               SampleGame.button.bullet_obj[i].is_die = true;
+              SampleGame.score.score_num += 3;
               this.image = SampleGame.game.assets['enemy2.png'];
               this.damage_frame = Enemy.DAMAGE_FRAME;
               this.is_damage = true;
               this.hit_point--;
               if (this.hit_point <= 0) {
-                _results.push(this.is_die = true);
+                this.is_die = true;
+                _results.push(SampleGame.score.score_num += 10);
               } else {
                 _results.push(void 0);
               }
@@ -391,6 +497,19 @@
         return _results;
       });
     }
+
+    Enemy.prototype.flash = function() {
+      this.flash_frame--;
+      if (this.flash_frame <= 0) {
+        if (this.visible) {
+          this.visible = false;
+        } else {
+          this.visible = true;
+        }
+        this.flash_frame = Enemy.FLASH_FRAME;
+      }
+      return 0;
+    };
 
     return Enemy;
 
@@ -416,53 +535,82 @@
         this.str_sprite[i].image = SampleGame.game.assets['font.png'];
         this.str_sprite[i].frame = Score.STR_INDEX[i];
         SampleGame.game.rootScene.addChild(this.str_sprite[i]);
-        this.num_sprite[0] = new Sprite(16, 16);
-        this.num_sprite[0].moveTo(this.x_offset + 16 * 0, this.y_offset + 20);
-        this.num_sprite[0].image = SampleGame.game.assets['font.png'];
-        if (this.score_num === 0) {
-          this.num_sprite[0].frame = Score.NUM_INDEX[0];
-        } else {
-          this.num_sprite[0].frame = Score.NUM_INDEX[this.score_num / 10000];
-        }
-        SampleGame.game.rootScene.addChild(this.num_sprite[0]);
-        this.num_sprite[1] = new Sprite(16, 16);
-        this.num_sprite[1].moveTo(this.x_offset + 16 * 1, this.y_offset + 20);
-        this.num_sprite[1].image = SampleGame.game.assets['font.png'];
-        if (this.score_num === 0) {
-          this.num_sprite[1].frame = Score.NUM_INDEX[0];
-        } else {
-          this.num_sprite[1].frame = Score.NUM_INDEX[this.score_num % 10000 / 1000];
-        }
-        SampleGame.game.rootScene.addChild(this.num_sprite[1]);
-        this.num_sprite[2] = new Sprite(16, 16);
-        this.num_sprite[2].moveTo(this.x_offset + 16 * 2, this.y_offset + 20);
-        this.num_sprite[2].image = SampleGame.game.assets['font.png'];
-        if (this.score_num === 0) {
-          this.num_sprite[2].frame = Score.NUM_INDEX[0];
-        } else {
-          this.num_sprite[2].frame = Score.NUM_INDEX[this.score_num % 1000 / 100];
-        }
-        SampleGame.game.rootScene.addChild(this.num_sprite[2]);
-        this.num_sprite[3] = new Sprite(16, 16);
-        this.num_sprite[3].moveTo(this.x_offset + 16 * 3, this.y_offset + 20);
-        this.num_sprite[3].image = SampleGame.game.assets['font.png'];
-        if (this.score_num === 0) {
-          this.num_sprite[3].frame = Score.NUM_INDEX[0];
-        } else {
-          this.num_sprite[3].frame = Score.NUM_INDEX[this.score_num % 100 / 10];
-        }
-        SampleGame.game.rootScene.addChild(this.num_sprite[3]);
-        this.num_sprite[4] = new Sprite(16, 16);
-        this.num_sprite[4].moveTo(this.x_offset + 16 * 4, this.y_offset + 20);
-        this.num_sprite[4].image = SampleGame.game.assets['font.png'];
-        if (this.score_num === 0) {
-          this.num_sprite[4].frame = Score.NUM_INDEX[0];
-        } else {
-          this.num_sprite[4].frame = Score.NUM_INDEX[this.score_num % 10];
-        }
-        SampleGame.game.rootScene.addChild(this.num_sprite[4]);
       }
+      this.num_sprite[0] = new Sprite(16, 16);
+      this.num_sprite[0].moveTo(this.x_offset + 16 * 0, this.y_offset + 20);
+      this.num_sprite[0].image = SampleGame.game.assets['font.png'];
+      if (this.score_num === 0) {
+        this.num_sprite[0].frame = Score.NUM_INDEX[0];
+      } else {
+        this.num_sprite[0].frame = Score.NUM_INDEX[Math.floor(this.score_num / 10000)];
+      }
+      SampleGame.game.rootScene.addChild(this.num_sprite[0]);
+      this.num_sprite[1] = new Sprite(16, 16);
+      this.num_sprite[1].moveTo(this.x_offset + 16 * 1, this.y_offset + 20);
+      this.num_sprite[1].image = SampleGame.game.assets['font.png'];
+      if (this.score_num === 0) {
+        this.num_sprite[1].frame = Score.NUM_INDEX[0];
+      } else {
+        this.num_sprite[1].frame = Score.NUM_INDEX[Math.floor(this.score_num % 10000 / 1000)];
+      }
+      SampleGame.game.rootScene.addChild(this.num_sprite[1]);
+      this.num_sprite[2] = new Sprite(16, 16);
+      this.num_sprite[2].moveTo(this.x_offset + 16 * 2, this.y_offset + 20);
+      this.num_sprite[2].image = SampleGame.game.assets['font.png'];
+      if (this.score_num === 0) {
+        this.num_sprite[2].frame = Score.NUM_INDEX[0];
+      } else {
+        this.num_sprite[2].frame = Score.NUM_INDEX[Math.floor(this.score_num % 1000 / 100)];
+      }
+      SampleGame.game.rootScene.addChild(this.num_sprite[2]);
+      this.num_sprite[3] = new Sprite(16, 16);
+      this.num_sprite[3].moveTo(this.x_offset + 16 * 3, this.y_offset + 20);
+      this.num_sprite[3].image = SampleGame.game.assets['font.png'];
+      if (this.score_num === 0) {
+        this.num_sprite[3].frame = Score.NUM_INDEX[0];
+      } else {
+        this.num_sprite[3].frame = Score.NUM_INDEX[Math.floor(this.score_num % 100 / 10)];
+      }
+      SampleGame.game.rootScene.addChild(this.num_sprite[3]);
+      this.num_sprite[4] = new Sprite(16, 16);
+      this.num_sprite[4].moveTo(this.x_offset + 16 * 4, this.y_offset + 20);
+      this.num_sprite[4].image = SampleGame.game.assets['font.png'];
+      if (this.score_num === 0) {
+        this.num_sprite[4].frame = Score.NUM_INDEX[0];
+      } else {
+        this.num_sprite[4].frame = Score.NUM_INDEX[Math.floor(this.score_num % 10)];
+      }
+      SampleGame.game.rootScene.addChild(this.num_sprite[4]);
     }
+
+    Score.prototype.score_update = function() {
+      var i, index, _i, _results;
+      _results = [];
+      for (i = _i = 0; _i < 5; i = ++_i) {
+        if (this.score_num === 0) {
+          _results.push(this.num_sprite[i].frame = Score.NUM_INDEX[0]);
+        } else {
+          index = null;
+          if (i === 0) {
+            index = this.score_num / 10000;
+          }
+          if (i === 1) {
+            index = this.score_num % 10000 / 1000;
+          }
+          if (i === 2) {
+            index = this.score_num % 1000 / 100;
+          }
+          if (i === 3) {
+            index = this.score_num % 100 / 10;
+          }
+          if (i === 4) {
+            index = this.score_num % 10;
+          }
+          _results.push(this.num_sprite[i].frame = Score.NUM_INDEX[Math.floor(index)]);
+        }
+      }
+      return _results;
+    };
 
     return Score;
 

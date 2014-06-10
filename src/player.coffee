@@ -5,11 +5,13 @@ class Player extends Sprite
   Player.ANIM_MAX = 3;
   Player.FRAME_INDEX = [[0,1,2],[6,7,8],[12,13,14],[18,19,20]]
   Player.MOVE_SPEED = 3
+  Player.FLASH_FRAME = 10
   constructor: (x, y) ->
     super Player.WIDTH, Player.HEIGHT
     
     @now_frame_index = 0;
     @anim_wait = Player.ANIM_WAIT
+    @flash_frame = Player.FLASH_FRAME
     
     @player_turn = SampleGame.DOWN
     
@@ -51,5 +53,23 @@ class Player extends Sprite
           @now_frame_index = 0
         @frame = Player.FRAME_INDEX[@player_turn][@now_frame_index]
         @anim_wait = Player.ANIM_WAIT
+        
+  is_enemy_hit: -> 
+    for i in [0..EnemyManage.ENEMY_MAX]
+      if SampleGame.enemy.enemy_obj[i] != null && !SampleGame.enemy.enemy_obj[i].is_die
+        distance = ((Enemy.WIDTH-14)+Player.WIDTH-6)/2;
+        if SampleGame.enemy.enemy_obj[i].within(@, distance)
+          return i
+      else 
+        return -1
+    return -1
 
-
+  flash: ->
+    @flash_frame--
+    if @flash_frame <= 0
+      if @visible
+        @visible = false
+      else
+        @visible = true
+      @flash_frame = Player.FLASH_FRAME
+    return 0
